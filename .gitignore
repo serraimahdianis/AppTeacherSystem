@@ -1,0 +1,124 @@
+# Flutter/Dart
+*.dart.js
+*.dart.js.map
+.dart_tool/
+.dart_tool/
+.packages
+.pub/
+build/
+web/
+*.apk
+*.apks
+*.aab
+*.ipa
+*.app
+*.exe
+*.msi
+*.dll
+*.exe~
+*.pdb
+*.mdb
+*.ldf
+*.sdf
+*.cache
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.dart/
+packages/
+ pubspec.lock
+pubspec-overrides.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+*.lnk
+Desktop.ini
+
+# Logs
+*.log
+logs/
+flutter_logs/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test coverage
+coverage/
+*.lcov
+.all_test_results.json
+
+# Firebase
+firebase.json
+.google-service.json
+.firebase/
+
+# Android
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/local.properties
+/android/*.iml
+/android/.idea/
+
+# iOS
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/App.framework/
+/ios/Flutter/Flutter.framework/
+/ios/Flutter/Generated.xcconfig
+/ios/Runner.xcworkspace/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcuserdata/
+
+# Windows
+*.exe
+*.dll
+*.pdb
+*.manifest
+*.manifest#
+*.publishsettings
+*.user
+*.suo
+*.sln.docstates
+*.sln.docstates#
+*.csproj.user
+*.csproj.user#
+*.visualstudio.com.com.user
+*.visualstudio.com.com.user#
+.vs/
+.vscode/
+
+# NestJS backend (if in same repo)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.env
+dist/
+build/
+*.tsbuildinfo
+.nest-cli.json
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
