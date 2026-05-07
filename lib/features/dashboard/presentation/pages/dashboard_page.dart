@@ -22,7 +22,6 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Session> _upcomingSessions = [];
 
   final _sessionsService = SessionsService();
-  final _studentsService = StudentsService();
   final _attendanceService = AttendanceService();
 
   @override
