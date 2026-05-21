@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'constants.dart';
 import 'models/models.dart';
 
@@ -15,6 +15,7 @@ class ApiClient {
   Teacher? _user;
   String? _teacherId;
   UnauthorizedCallback? onUnauthorized;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   ApiClient._internal() {
     _dio = Dio(BaseOptions(
@@ -46,18 +47,15 @@ class ApiClient {
     _token = null;
     _user = null;
     _teacherId = null;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.remove('auth_token');
-      prefs.remove('user_profile');
-    });
+    _secureStorage.delete(key: 'auth_token');
+    _secureStorage.delete(key: 'user_profile');
     onUnauthorized?.call();
   }
 
   Future<void> setToken(String token) async {
     _token = token;
     _extractTeacherIdFromToken();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await _secureStorage.write(key: 'auth_token', value: token);
   }
 
   void _extractTeacherIdFromToken() {
@@ -80,19 +78,17 @@ class ApiClient {
 
   Future<void> setUser(Teacher teacher) async {
     _user = teacher;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_profile', jsonEncode(teacher.toJson()));
+    await _secureStorage.write(key: 'user_profile', value: jsonEncode(teacher.toJson()));
   }
 
   Future<void> loadToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('auth_token');
+    _token = await _secureStorage.read(key: 'auth_token');
 
     if (_token != null) {
       _extractTeacherIdFromToken();
     }
 
-    final profileStr = prefs.getString('user_profile');
+    final profileStr = await _secureStorage.read(key: 'user_profile');
     if (profileStr != null) {
       try {
         _user = Teacher.fromJson(jsonDecode(profileStr));
@@ -106,13 +102,13 @@ class ApiClient {
     _token = null;
     _user = null;
     _teacherId = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_profile');
+    await _secureStorage.delete(key: 'auth_token');
+    await _secureStorage.delete(key: 'user_profile');
   }
 
   bool get isAuthenticated => _token != null;
 
+  String? get token => _token;
   Teacher? get user => _user;
   String? get teacherId => _teacherId;
 

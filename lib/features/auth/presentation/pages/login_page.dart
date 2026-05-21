@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       debugPrint('Login failed: $e');
-      setState(() {
+      if (mounted) setState(() {
         _errorMessage = e.toString();
       });
     } finally {

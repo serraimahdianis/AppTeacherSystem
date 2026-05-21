@@ -45,13 +45,7 @@ class AuthService {
         final profileResponse = await _client.get(ApiConstants.teachersMe);
         teacher = Teacher.fromJson(profileResponse.data);
       } catch (e) {
-        teacher = Teacher(
-          id: '',
-          email: email,
-          firstName: email.split('@').first,
-          lastName: '',
-          createdAt: DateTime.now(),
-        );
+        rethrow;
       }
 
       await _client.setUser(teacher);
@@ -76,13 +70,7 @@ class AuthService {
         final profileResponse = await _client.get(ApiConstants.teachersMe);
         teacher = Teacher.fromJson(profileResponse.data);
       } catch (e) {
-        teacher = Teacher(
-          id: '',
-          email: email,
-          firstName: email.split('@').first,
-          lastName: '',
-          createdAt: DateTime.now(),
-        );
+        rethrow;
       }
 
       await _client.setUser(teacher);

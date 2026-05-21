@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/api/api.dart';
+import '../../../../core/socket/socket_service.dart';
 
 class AttendancePage extends StatefulWidget {
   final String sessionId;
@@ -18,6 +19,7 @@ class _AttendancePageState extends State<AttendancePage> {
   final _sessionsService = SessionsService();
   final _studentsService = StudentsService();
   final _attendanceService = AttendanceService();
+  final _socketService = SocketService();
 
   Session? _session;
   List<Student> _students = [];
@@ -26,19 +28,57 @@ class _AttendancePageState extends State<AttendancePage> {
   String _errorMessage = '';
   bool _isSaving = false;
 
-  // QR code refresh timer
-  Timer? _qrRefreshTimer;
-  int _qrTimestamp = 0;
-
   @override
   void initState() {
     super.initState();
     _loadData();
+
+    _socketService.connect();
+    _socketService.joinSession(widget.sessionId);
+
+    _socketService.onAttendanceScan = ({
+      required String sessionId,
+      required String studentId,
+      required String studentName,
+      required String status,
+      required String scanTime,
+    }) {
+      if (!mounted) return;
+      setState(() {
+        _attendanceMap[studentId] = _parseStatus(status);
+      });
+    };
+
+    _socketService.onAttendanceStatusChanged = ({
+      required String sessionId,
+      required String studentId,
+      required String newStatus,
+    }) {
+      if (!mounted) return;
+      setState(() {
+        _attendanceMap[studentId] = _parseStatus(newStatus);
+      });
+    };
+  }
+
+  AttendanceStatus _parseStatus(String status) {
+    switch (status) {
+      case 'present':
+        return AttendanceStatus.present;
+      case 'late':
+        return AttendanceStatus.late;
+      case 'absent':
+        return AttendanceStatus.absent;
+      default:
+        return AttendanceStatus.absent;
+    }
   }
 
   @override
   void dispose() {
-    _qrRefreshTimer?.cancel();
+    _socketService.leaveSession(widget.sessionId);
+    _socketService.onAttendanceScan = null;
+    _socketService.onAttendanceStatusChanged = null;
     super.dispose();
   }
 
@@ -155,56 +195,19 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 
-  /// Generate QR code data string with session info and timestamp
-  String _generateQrData() {
-    return jsonEncode({
-      'sessionId': widget.sessionId,
-      'type': 'attendance',
-      'timestamp': _qrTimestamp,
-    });
-  }
-
   /// Show the QR code dialog for students to scan
   void _showQrCodeDialog() {
-    // Set initial timestamp
-    _qrTimestamp =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Refresh QR code every 30 seconds for security
-    _qrRefreshTimer?.cancel();
-    _qrRefreshTimer =
-        Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (mounted) {
-        setState(() {
-          _qrTimestamp =
-              DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        });
-      } else {
-        timer.cancel();
-      }
-    });
-
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) {
         return _QrCodeDialog(
+          sessionId: widget.sessionId,
           session: _session,
-          qrData: _generateQrData(),
-          onClose: () {
-            _qrRefreshTimer?.cancel();
-            Navigator.pop(dialogContext);
-            // Reload attendance data after QR display
-            _loadData();
-          },
+          onClose: () => Navigator.pop(dialogContext),
         );
       },
-    ).then((_) {
-      // Cleanup timer when dialog is closed any way
-      _qrRefreshTimer?.cancel();
-      // Refresh attendance list after students may have scanned
-      _loadData();
-    });
+    );
   }
 
   @override
@@ -408,16 +411,58 @@ class _AttendancePageState extends State<AttendancePage> {
 
 // --- QR Code Dialog ---
 
-class _QrCodeDialog extends StatelessWidget {
+class _QrCodeDialog extends StatefulWidget {
+  final String sessionId;
   final Session? session;
-  final String qrData;
   final VoidCallback onClose;
 
   const _QrCodeDialog({
+    required this.sessionId,
     required this.session,
-    required this.qrData,
     required this.onClose,
   });
+
+  @override
+  State<_QrCodeDialog> createState() => _QrCodeDialogState();
+}
+
+class _QrCodeDialogState extends State<_QrCodeDialog> {
+  final _sessionsService = SessionsService();
+  Timer? _refreshTimer;
+  String _qrData = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshQr();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshQr());
+  }
+
+  Future<void> _refreshQr() async {
+    String nonce;
+    try {
+      final nonceData = await _sessionsService.getNonce(widget.sessionId);
+      nonce = nonceData['nonce'] ?? '';
+    } catch (e) {
+      nonce = '';
+    }
+
+    if (mounted) {
+      setState(() {
+        _qrData = jsonEncode({
+          'sessionId': widget.sessionId,
+          'nonce': nonce,
+          'type': 'attendance',
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -492,10 +537,10 @@ class _QrCodeDialog extends StatelessWidget {
                                 fontSize: 16,
                               ),
                             ),
-                            if (session != null)
+                            if (widget.session != null)
                               Text(
-                                '${session!.moduleName} • '
-                                '${session!.typeString}',
+                                '${widget.session!.moduleName} '
+                                '${widget.session!.typeString}',
                                 style: TextStyle(
                                   color: Colors.white
                                       .withValues(alpha: 0.85),
@@ -506,7 +551,7 @@ class _QrCodeDialog extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: onClose,
+                        onPressed: widget.onClose,
                         icon: const Icon(Icons.close,
                             color: Colors.white),
                         style: IconButton.styleFrom(
@@ -516,7 +561,7 @@ class _QrCodeDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (session != null) ...[
+                  if (widget.session != null) ...[
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -533,7 +578,7 @@ class _QrCodeDialog extends StatelessWidget {
                               color: Colors.white, size: 16),
                           const SizedBox(width: 6),
                           Text(
-                            session!.groupName,
+                            widget.session!.groupName,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -545,7 +590,7 @@ class _QrCodeDialog extends StatelessWidget {
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            session!.room,
+                            widget.session!.room,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -562,28 +607,32 @@ class _QrCodeDialog extends StatelessWidget {
             // QR Code area
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.border,
-                    width: 2,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Container(
+                  key: ValueKey(_qrData),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.border,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: QrImageView(
-                  data: qrData,
-                  version: QrVersions.auto,
-                  size: qrSize,
-                  backgroundColor: Colors.white,
-                  eyeStyle: const QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: AppColors.primaryDark,
-                  ),
-                  dataModuleStyle: const QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.textPrimary,
+                  child: QrImageView(
+                    data: _qrData,
+                    version: QrVersions.auto,
+                    size: qrSize,
+                    backgroundColor: Colors.white,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: AppColors.primaryDark,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ),

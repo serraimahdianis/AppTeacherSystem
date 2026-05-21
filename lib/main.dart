@@ -10,10 +10,9 @@ void main() async {
   final apiClient = ApiClient();
   await apiClient.loadToken();
   
-  // Set up unauthorized callback to refresh router
+  // Navigate to login on 401
   apiClient.onUnauthorized = () {
-    // The router's redirect will handle navigation
-    // We just need to notify that auth state changed
+    appRouter.go('/login');
   };
   
   runApp(const TeacherApp());

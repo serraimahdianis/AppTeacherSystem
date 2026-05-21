@@ -115,6 +115,17 @@ class SessionsService {
     }
   }
 
+  Future<Map<String, dynamic>> getNonce(String sessionId) async {
+    try {
+      final response = await _client.get(
+        '${ApiConstants.sessions}/$sessionId/nonce',
+      );
+      return _ensureMap(response.data);
+    } on DioException {
+      return {'nonce': '', 'expiresAt': 0};
+    }
+  }
+
   // Helper to ensure proper Map<String, dynamic> type for web compatibility
   Map<String, dynamic> _ensureMap(dynamic data) {
     if (data is Map<String, dynamic>) return data;

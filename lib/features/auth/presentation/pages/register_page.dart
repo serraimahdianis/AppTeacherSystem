@@ -41,13 +41,13 @@ class _RegisterPageState extends State<RegisterPage> {
         password: _passwordController.text,
         department: _departmentController.text.trim(),
       );
-      setState(() {
+      if (mounted) setState(() {
         _otpSent = true;
         _registeredEmail = _emailController.text.trim();
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
+      if (mounted) setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
       });
@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
         context.go('/dashboard');
       }
     } catch (e) {
-      setState(() {
+      if (mounted) setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
       });

@@ -72,12 +72,12 @@ class _EditSchedulePageState extends State<EditSchedulePage> {
         orElse: () => modules.isNotEmpty ? modules.first : Module(id: '', name: '', teacherId: '', year: ''),
       );
 
-      setState(() {
+      if (mounted) setState(() {
         _modules = modules;
         _selectedModule = module;
 
         _type = schedule.type.toLowerCase();
-        _year = schedule.type == 'cours' ? 'L2' : 'L2'; // default if not found
+        _year = schedule.year ?? 'L2';
         _group = schedule.groupName;
         _dayOfWeek = schedule.dayOfWeek;
         _startTime = _parseTimeString(schedule.startTime);
