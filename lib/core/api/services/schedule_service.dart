@@ -10,9 +10,10 @@ class ScheduleService {
     try {
       final response = await _client.get(
         ApiConstants.schedulesTeacher.replaceFirst(':id', teacherId),
+        queryParameters: {'limit': 100},
       );
       
-      final List<dynamic> data = response.data is List ? response.data : response.data['schedules'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['schedules'] ?? []);
       return data.map((json) => Schedule.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -23,21 +24,7 @@ class ScheduleService {
     try {
       final response = await _client.get(ApiConstants.schedules);
       
-      final List<dynamic> data = response.data is List ? response.data : response.data['schedules'] ?? [];
-      return data.map((json) => Schedule.fromJson(json)).toList();
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
-  }
-
-  Future<List<Schedule>> getWeekSchedule(String teacherId, DateTime weekStart) async {
-    try {
-      final response = await _client.get(
-        ApiConstants.schedulesTeacherWeek.replaceFirst(':id', teacherId),
-        queryParameters: {'weekStart': weekStart.toIso8601String()},
-      );
-      
-      final List<dynamic> data = response.data is List ? response.data : response.data['schedules'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['schedules'] ?? []);
       return data.map((json) => Schedule.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);

@@ -54,10 +54,12 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
     try {
       final teacherId = ApiClient().user?.id ?? '';
       final modules = await _modulesService.getModulesByTeacher(teacherId);
-      if (mounted) setState(() {
-        _modules = modules;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _modules = modules;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);

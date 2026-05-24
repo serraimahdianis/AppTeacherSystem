@@ -9,7 +9,7 @@ class ModulesService {
   Future<List<Module>> getAllModules() async {
     try {
       final response = await _client.get(ApiConstants.modules);
-      final List<dynamic> data = response.data is List ? response.data : response.data['modules'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['modules'] ?? []);
       return data.map((json) => Module.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -20,8 +20,9 @@ class ModulesService {
     try {
       final response = await _client.get(
         ApiConstants.modulesTeacher.replaceFirst(':id', teacherId),
+        queryParameters: {'limit': 100},
       );
-      final List<dynamic> data = response.data is List ? response.data : response.data['modules'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['modules'] ?? []);
       return data.map((json) => Module.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);

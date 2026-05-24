@@ -3,6 +3,7 @@ class Schedule {
   final String moduleName;
   final String groupName;
   final String type;
+  final String year;
   final String room;
   final String dayOfWeek; // String like "Monday"
   final String startTime; // Time string like "08:00"
@@ -14,6 +15,7 @@ class Schedule {
     required this.moduleName,
     required this.groupName,
     required this.type,
+    required this.year,
     required this.room,
     required this.dayOfWeek,
     required this.startTime,
@@ -45,9 +47,9 @@ class Schedule {
   factory Schedule.fromJson(Map<String, dynamic> json) {
     // Handle moduleName - could be string or object {name: ...}
     String parseModuleName() {
-      final value = json['module'] ?? json['moduleName'] ?? json['module_name'];
+      final value = json['moduleId'] ?? json['module'] ?? json['moduleName'] ?? json['module_name'];
       if (value is String) return value;
-      if (value is Map) return value['name']?.toString() ?? value['moduleName']?.toString() ?? '';
+      if (value is Map) return value['name']?.toString() ?? value['moduleName']?.toString() ?? value['_id']?.toString() ?? '';
       return '';
     }
 
@@ -91,11 +93,23 @@ class Schedule {
       return '';
     }
 
+    // Year is on the module; fall back to moduleId populated object if schedule lacks it
+    String parseYear() {
+      final directYear = json['year']?.toString();
+      if (directYear != null && directYear.isNotEmpty) return directYear;
+      final moduleObj = json['moduleId'];
+      if (moduleObj is Map) {
+        return moduleObj['year']?.toString() ?? '';
+      }
+      return '';
+    }
+
     return Schedule(
       id: (json['id'] ?? json['_id'])?.toString() ?? '',
       moduleName: parseModuleName(),
       groupName: parseGroupName(),
       type: parseType(),
+      year: parseYear(),
       room: parseRoom(),
       dayOfWeek: parseDayOfWeek(),
       startTime: (json['startTime'] ?? json['start_time'])?.toString() ?? '',
@@ -110,6 +124,7 @@ class Schedule {
       'moduleName': moduleName,
       'groupName': groupName,
       'type': type,
+      'year': year,
       'room': room,
       'dayOfWeek': dayOfWeek,
       'startTime': startTime,

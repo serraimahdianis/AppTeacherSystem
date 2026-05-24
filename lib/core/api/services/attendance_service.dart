@@ -11,11 +11,12 @@ class AttendanceService {
     try {
       final response = await _client.get(
         ApiConstants.attendanceSession.replaceFirst(':id', sessionId),
+        queryParameters: {'limit': 1000},
       );
 
       final List<dynamic> data = response.data is List
           ? response.data
-          : response.data['attendance'] ?? [];
+          : (response.data['data'] ?? response.data['attendance'] ?? []);
       return data.map((json) => Attendance.fromJson(_ensureMap(json))).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -48,21 +49,12 @@ class AttendanceService {
     String? sessionId,
     String? studentId,
     String? group,
-    DateTime? startDate,
-    DateTime? endDate,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (sessionId != null) queryParams['sessionId'] = sessionId;
       if (studentId != null) queryParams['studentId'] = studentId;
       if (group != null) queryParams['group'] = group;
-
-      if (startDate != null) {
-        queryParams['startDate'] = startDate.toIso8601String().split('T')[0];
-      }
-      if (endDate != null) {
-        queryParams['endDate'] = endDate.toIso8601String().split('T')[0];
-      }
 
       final response = await _client.get(
         ApiConstants.attendanceStats,

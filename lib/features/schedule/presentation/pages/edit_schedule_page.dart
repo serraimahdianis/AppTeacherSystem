@@ -72,12 +72,13 @@ class _EditSchedulePageState extends State<EditSchedulePage> {
         orElse: () => modules.isNotEmpty ? modules.first : Module(id: '', name: '', teacherId: '', year: ''),
       );
 
-      if (mounted) setState(() {
-        _modules = modules;
-        _selectedModule = module;
+      if (mounted) {
+        setState(() {
+          _modules = modules;
+          _selectedModule = module;
 
         _type = schedule.type.toLowerCase();
-        _year = schedule.year ?? 'L2';
+        _year = schedule.year;
         _group = schedule.groupName;
         _dayOfWeek = schedule.dayOfWeek;
         _startTime = _parseTimeString(schedule.startTime);
@@ -89,6 +90,7 @@ class _EditSchedulePageState extends State<EditSchedulePage> {
 
         _isLoading = false;
       });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);

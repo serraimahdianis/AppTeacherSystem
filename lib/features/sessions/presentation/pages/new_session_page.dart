@@ -61,11 +61,13 @@ class _NewSessionPageState extends State<NewSessionPage> {
         _schedulesService.getAllSchedules(),
       ]);
 
-      if (mounted) setState(() {
-        _modules = results[0] as List<Module>;
-        _schedules = results[1] as List<Schedule>;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _modules = results[0] as List<Module>;
+          _schedules = results[1] as List<Schedule>;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);

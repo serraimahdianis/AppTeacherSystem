@@ -6,20 +6,33 @@ import '../models/models.dart';
 class StudentsService {
   final ApiClient _client = ApiClient();
 
-  Future<List<Student>> getAllStudents({String? group}) async {
+  Future<List<Student>> getAllStudents({String? group, String? year}) async {
     try {
       final queryParams = <String, dynamic>{};
-      if (group != null && group.isNotEmpty && group != 'All') {
+      if (group != null && group.isNotEmpty) {
         queryParams['group'] = group;
       }
-      
+      if (year != null && year.isNotEmpty) {
+        queryParams['year'] = year;
+      }
+      queryParams['limit'] = 500;
+
       final response = await _client.get(
         ApiConstants.students,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      
-      final List<dynamic> data = response.data is List ? response.data : response.data['students'] ?? [];
-      return data.map((json) => Student.fromJson(json)).toList();
+
+      final List<dynamic> data;
+      if (response.data is List) {
+        data = response.data;
+      } else if (response.data is Map && response.data['data'] is List) {
+        data = response.data['data'];
+      } else if (response.data is Map && response.data['students'] is List) {
+        data = response.data['students'];
+      } else {
+        data = [];
+      }
+      return data.map((json) => Student.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -34,24 +47,13 @@ class StudentsService {
     }
   }
 
-  Future<List<Student>> searchStudents(String query) async {
+  /// Find a student by their RFID card or personal QR code.
+  Future<Student> getStudentByRfid(String code) async {
     try {
       final response = await _client.get(
-        ApiConstants.students,
-        queryParameters: {'search': query},
+        ApiConstants.studentsRfid.replaceFirst(':rfidCode', code),
       );
-      
-      final List<dynamic> data = response.data is List ? response.data : response.data['students'] ?? [];
-      return data.map((json) => Student.fromJson(json)).toList();
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
-  }
-
-  Future<Map<String, dynamic>> getStudentStats() async {
-    try {
-      final response = await _client.get(ApiConstants.studentsStats);
-      return response.data ?? {};
+      return Student.fromJson(response.data);
     } on DioException catch (e) {
       throw _handleError(e);
     }

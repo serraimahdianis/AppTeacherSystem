@@ -11,9 +11,10 @@ class SessionsService {
     try {
       final response = await _client.get(
         ApiConstants.sessionsTeacher.replaceFirst(':id', teacherId),
+        queryParameters: {'limit': 100},
       );
       
-      final List<dynamic> data = response.data is List ? response.data : response.data['sessions'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['sessions'] ?? []);
       return data.map((json) => Session.fromJson(_ensureMap(json))).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -24,7 +25,7 @@ class SessionsService {
     try {
       final response = await _client.get(ApiConstants.sessions);
       
-      final List<dynamic> data = response.data is List ? response.data : response.data['sessions'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['sessions'] ?? []);
       return data.map((json) => Session.fromJson(_ensureMap(json))).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -45,10 +46,10 @@ class SessionsService {
       final today = DateTime.now().toIso8601String().split('T')[0];
       final response = await _client.get(
         ApiConstants.sessionsTeacherToday.replaceFirst(':id', teacherId),
-        queryParameters: {'date': today},
+        queryParameters: {'date': today, 'limit': 100},
       );
       
-      final List<dynamic> data = response.data is List ? response.data : response.data['sessions'] ?? [];
+      final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['sessions'] ?? []);
       return data.map((json) => Session.fromJson(_ensureMap(json))).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -69,12 +70,6 @@ class SessionsService {
       final response = await _client.post(
         ApiConstants.sessionsStart.replaceFirst(':scheduleId', scheduleId),
       );
-      
-      // Handle 409 - session already exists for today
-      if (response.statusCode == 409) {
-        throw 'A session for this schedule already exists for today.';
-      }
-      
       return Session.fromJson(_ensureMap(response.data));
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {

@@ -84,6 +84,23 @@ class AuthService {
     await _client.clearToken();
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _client.patch(
+        ApiConstants.authChangePassword,
+        data: {
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        },
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<Teacher> getProfile() async {
     try {
       final response = await _client.get(ApiConstants.teachersMe);

@@ -1,9 +1,18 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:3000';
-  
+  static String baseUrl = _getInitialBaseUrl();
+
+  static String _getInitialBaseUrl() {
+    if (kIsWeb) return 'http://localhost:3000';
+    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
+    return 'http://localhost:3000';
+  }
   static const String authLogin = '/auth/teacher/login';
   static const String authRegister = '/auth/teacher/register';
   static const String authVerifyOtp = '/auth/teacher/verify-otp';
+  static const String authChangePassword = '/auth/teacher/change-password';
   
   static const String teachers = '/teachers';
   static const String teachersMe = '/teachers/me';
@@ -12,7 +21,6 @@ class ApiConstants {
   static const String students = '/students';
   static const String studentsId = '/students/:id';
   static const String studentsRfid = '/students/rfid/:rfidCode';
-  static const String studentsStats = '/students/stats';
   
   static const String sessions = '/sessions';
   static const String sessionsTeacher = '/sessions/teacher/:id';
@@ -24,7 +32,6 @@ class ApiConstants {
   
   static const String schedules = '/schedules';
   static const String schedulesTeacher = '/schedules/teacher/:id';
-  static const String schedulesTeacherWeek = '/schedules/teacher/:id/week';
   static const String schedulesId = '/schedules/:id';
 
   static const String modules = '/modules';

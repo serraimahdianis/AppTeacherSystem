@@ -8,6 +8,8 @@ class Student {
   final String? studentId;
   final String? year;
   final String? speciality;
+  final String? rfidCode;
+  final String? qrCode;
   final double attendanceRate;
   final String? profileImage;
   final DateTime createdAt;
@@ -22,6 +24,8 @@ class Student {
     this.studentId,
     this.year,
     this.speciality,
+    this.rfidCode,
+    this.qrCode,
     this.attendanceRate = 0.0,
     this.profileImage,
     required this.createdAt,
@@ -62,6 +66,8 @@ class Student {
       studentId: json['studentId']?.toString() ?? json['student_id']?.toString(),
       year: json['year']?.toString(),
       speciality: json['speciality']?.toString(),
+      rfidCode: json['rfidCode']?.toString() ?? json['rfid_code']?.toString(),
+      qrCode: json['qrCode']?.toString() ?? json['qr_code']?.toString(),
       attendanceRate: (json['attendanceRate'] ?? json['attendance_rate'] ?? 0).toDouble(),
       profileImage: json['profileImage']?.toString() ?? json['profile_image']?.toString(),
       createdAt: json['createdAt'] != null 
@@ -81,6 +87,8 @@ class Student {
       'studentId': studentId,
       'year': year,
       'speciality': speciality,
+      'rfidCode': rfidCode,
+      'qrCode': qrCode,
       'attendanceRate': attendanceRate,
       'profileImage': profileImage,
       'createdAt': createdAt.toIso8601String(),

@@ -5,17 +5,19 @@ enum AttendanceStatus { present, absent, late }
 class Attendance {
   final String id;
   final String studentId;
+  final String studentName;
   final String sessionId;
   final AttendanceStatus status;
-  final DateTime timestamp;
+  final DateTime scanTime;
   final String? notes;
 
   Attendance({
     required this.id,
     required this.studentId,
+    this.studentName = '',
     required this.sessionId,
     required this.status,
-    required this.timestamp,
+    required this.scanTime,
     this.notes,
   });
 
@@ -36,15 +38,30 @@ class Attendance {
     // Handle _JsonMap type from web - ensure proper type conversion
     final data = _ensureMap(json);
 
+    // Extract student info — backend populates studentId as an object
+    String parseStudentId() {
+      final v = data['studentId'] ?? data['student_id'];
+      if (v == null) return '';
+      if (v is Map) return v['_id']?.toString() ?? v['id']?.toString() ?? '';
+      return v.toString();
+    }
+
+    String parseStudentName() {
+      final v = data['studentId'] ?? data['student_id'];
+      if (v is Map) return v['fullName']?.toString() ?? v['full_name']?.toString() ?? '';
+      return data['studentName']?.toString() ?? '';
+    }
+
     return Attendance(
       id: _parseString(data['id'] ?? data['_id']),
-      studentId: _parseString(data['studentId'] ?? data['student_id']),
+      studentId: parseStudentId(),
+      studentName: parseStudentName(),
       sessionId: _parseString(data['sessionId'] ?? data['session_id']),
       status: _parseStatus(data['status']),
-      timestamp: data['timestamp'] != null
-          ? (data['timestamp'] is DateTime
-              ? data['timestamp']
-              : DateTime.parse(data['timestamp'].toString()))
+      scanTime: data['scanTime'] != null
+          ? (data['scanTime'] is DateTime
+              ? data['scanTime']
+              : DateTime.parse(data['scanTime'].toString()))
           : DateTime.now(),
       notes: data['notes']?.toString(),
     );
@@ -74,7 +91,7 @@ class Attendance {
       'studentId': studentId,
       'sessionId': sessionId,
       'status': statusString,
-      'timestamp': timestamp.toIso8601String(),
+      'scanTime': scanTime.toIso8601String(),
       'notes': notes,
     };
   }
@@ -84,13 +101,13 @@ class AttendanceRecord {
   final String studentId;
   final String studentName;
   final AttendanceStatus status;
-  final DateTime? timestamp;
+  final DateTime? scanTime;
 
   AttendanceRecord({
     required this.studentId,
     required this.studentName,
     required this.status,
-    this.timestamp,
+    this.scanTime,
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
@@ -101,10 +118,10 @@ class AttendanceRecord {
       studentId: Attendance._parseString(data['studentId'] ?? data['student_id']),
       studentName: Attendance._parseString(data['studentName'] ?? data['student_name']),
       status: Attendance._parseStatus(data['status']),
-      timestamp: data['timestamp'] != null
-          ? (data['timestamp'] is DateTime
-              ? data['timestamp']
-              : DateTime.parse(data['timestamp'].toString()))
+      scanTime: data['scanTime'] != null
+          ? (data['scanTime'] is DateTime
+              ? data['scanTime']
+              : DateTime.parse(data['scanTime'].toString()))
           : null,
     );
   }
