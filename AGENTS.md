@@ -1,5 +1,7 @@
 # AGENTS.md - Teacher App Guidelines
 
+Root: `../AGENTS.md` for monorepo-wide commands and cross-project context.
+
 ## 1. Setup & Commands
 Flutter SDK at `D:\flutter`, use `flutter.bat` in project root.
 
