@@ -193,7 +193,16 @@ class _NewSessionPageState extends State<NewSessionPage> {
                     label: 'Link to Schedule (optional)',
                     value: _selectedSchedule,
                     items: _schedules,
-                    itemLabel: (s) => '${s.moduleName} - ${s.dayOfWeek} (${s.startTime}-${s.endTime})',
+                    itemLabel: (s) {
+                      final parts = [
+                        s.year,
+                        s.groupName.isNotEmpty ? 'G${s.groupName}' : 'Whole Year',
+                        if (s.speciality != null && s.speciality!.isNotEmpty) s.speciality!,
+                        s.dayOfWeek,
+                        s.startTime,
+                      ];
+                      return parts.join(' · ');
+                    },
                     onChanged: (v) => setState(() => _selectedSchedule = v),
                   ),
                   const SizedBox(height: 16),
@@ -293,13 +302,17 @@ class _NewSessionPageState extends State<NewSessionPage> {
   }) {
     return DropdownButtonFormField<T>(
       initialValue: value,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
       ),
       items: items.map((item) => DropdownMenuItem(
         value: item,
-        child: Text(itemLabel(item)),
+        child: Text(
+          itemLabel(item),
+          overflow: TextOverflow.ellipsis,
+        ),
       )).toList(),
       onChanged: onChanged,
       validator: validator,

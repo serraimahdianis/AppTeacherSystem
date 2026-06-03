@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -637,29 +636,40 @@ class _TeacherScannerDialogState extends State<_TeacherScannerDialog> with Singl
               // --- Camera Tab ---
               Stack(alignment: Alignment.center, children: [
                 ClipRRect(child: MobileScanner(controller: _scannerController, onDetect: _handleDetect)),
-                // Aim overlay
-                Container(
-                  width: 200, height: 200,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: _isSuccess ? AppColors.success : (_isError ? AppColors.error : Colors.white), width: 3),
-                    borderRadius: BorderRadius.circular(16),
+                // Aim overlay with corner accents
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _isSuccess ? AppColors.success : (_isError ? AppColors.error : Colors.white), width: 3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      // Corner accents
+                      ...[-1, 1].expand((hSign) => [-1, 1].map((vSign) => Positioned(
+                        left: hSign == -1 ? 0 : null,
+                        right: hSign == 1 ? 0 : null,
+                        top: vSign == -1 ? 0 : null,
+                        bottom: vSign == 1 ? 0 : null,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: hSign == -1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
+                              right: hSign == 1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
+                              top: vSign == -1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
+                              bottom: vSign == 1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ))),
+                    ],
                   ),
                 ),
-                // Corner accents
-                ...[-1, 1].expand((hSign) => [-1, 1].map((vSign) => Positioned(
-                  left: hSign == -1 ? MediaQuery.of(context).size.width / 2 - 120 : null,
-                  right: hSign == 1 ? MediaQuery.of(context).size.width / 2 - 120 : null,
-                  top: vSign == -1 ? 50 : null,
-                  bottom: vSign == 1 ? 50 : null,
-                  child: Container(width: 20, height: 20,
-                    decoration: BoxDecoration(border: Border(
-                      left: hSign == -1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
-                      right: hSign == 1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
-                      top: vSign == -1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
-                      bottom: vSign == 1 ? const BorderSide(color: AppColors.primary, width: 4) : BorderSide.none,
-                    )),
-                  ),
-                ))).toList(),
                 if (_isProcessing && !_isSuccess && !_isError)
                   Container(color: Colors.black54, child: const Center(child: CircularProgressIndicator(color: Colors.white))),
               ]),
@@ -726,12 +736,12 @@ class _TeacherScannerDialogState extends State<_TeacherScannerDialog> with Singl
           // Recent scans history
           if (_recentScans.isNotEmpty) ...[
             const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
               child: Row(children: [
-                const Icon(Icons.history, size: 14, color: AppColors.textMuted),
-                const SizedBox(width: 6),
-                const Text('Recent', style: TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+                Icon(Icons.history, size: 14, color: AppColors.textMuted),
+                SizedBox(width: 6),
+                Text('Recent', style: TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
               ]),
             ),
             ...(_recentScans.take(3).map((scan) => Padding(

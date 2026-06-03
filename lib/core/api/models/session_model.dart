@@ -22,6 +22,7 @@ class Session {
   final String? reasonForReplacement;
   final String year;
   final DateTime createdAt;
+  final String? speciality;
 
   Session({
     required this.id,
@@ -41,6 +42,7 @@ class Session {
     this.reasonForReplacement,
     this.year = '',
     required this.createdAt,
+    this.speciality,
   });
 
   DateTime get startTime {
@@ -129,7 +131,7 @@ class Session {
       final statusStr = status.toString().toLowerCase();
       if (statusStr == 'active' || statusStr.contains('progress')) return SessionStatus.inProgress;
       if (statusStr == 'closed' || statusStr.contains('completed')) return SessionStatus.completed;
-      if (statusStr == 'canceled' || statusStr == 'cancelled') return SessionStatus.canceled;
+      if (statusStr == 'canceled' || statusStr.contains('cancelled')) return SessionStatus.canceled;
       if (statusStr == 'planned') return SessionStatus.planned;
       return SessionStatus.planned;
     }
@@ -184,6 +186,7 @@ class Session {
         return '';
       }(),
       createdAt: _parseDate(data['createdAt']),
+      speciality: data['speciality']?.toString(),
     );
   }
 
@@ -205,6 +208,7 @@ class Session {
       'isReplacement': isReplacement,
       'year': year,
       'createdAt': createdAt.toIso8601String(),
+      'speciality': speciality,
     };
   }
 }

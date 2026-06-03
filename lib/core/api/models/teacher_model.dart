@@ -6,6 +6,9 @@ class Teacher {
   final String? phone;
   final String? department;
   final String? profileImage;
+  final List<String> groups;
+  final List<String> years;
+  final List<String> specialities;
   final DateTime createdAt;
 
   Teacher({
@@ -16,6 +19,9 @@ class Teacher {
     this.phone,
     this.department,
     this.profileImage,
+    this.groups = const [],
+    this.years = const [],
+    this.specialities = const [],
     required this.createdAt,
   });
 
@@ -52,6 +58,9 @@ class Teacher {
       phone: json['phone']?.toString(),
       department: json['department'] != null ? _parseString(json['department']) : null,
       profileImage: json['profileImage']?.toString() ?? json['profile_image']?.toString(),
+      groups: (json['groups'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      years: (json['years'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      specialities: (json['specialities'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt'].toString()) 
           : DateTime.now(),
@@ -67,6 +76,9 @@ class Teacher {
       'phone': phone,
       'department': department,
       'profileImage': profileImage,
+      'groups': groups,
+      'years': years,
+      'specialities': specialities,
       'createdAt': createdAt.toIso8601String(),
     };
   }

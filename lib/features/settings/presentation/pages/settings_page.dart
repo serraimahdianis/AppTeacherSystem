@@ -25,6 +25,14 @@ class _SettingsPageState extends State<SettingsPage> {
   String? _profileError;
   String? _passwordError;
 
+  List<String> _selectedGroups = [];
+  List<String> _selectedYears = [];
+  List<String> _selectedSpecialities = [];
+
+  List<dynamic> _allGroups = [];
+  List<dynamic> _allYears = [];
+  List<dynamic> _allSpecialities = [];
+
   Teacher? _teacher;
   final _authService = AuthService();
   final _client = ApiClient();
@@ -35,6 +43,23 @@ class _SettingsPageState extends State<SettingsPage> {
     _teacher = _client.user;
     _nameController.text = _teacher?.fullName ?? '';
     _departmentController.text = _teacher?.department ?? '';
+    _selectedGroups = List<String>.from(_teacher?.groups ?? []);
+    _selectedYears = List<String>.from(_teacher?.years ?? []);
+    _selectedSpecialities = List<String>.from(_teacher?.specialities ?? []);
+    _loadMetadata();
+  }
+
+  Future<void> _loadMetadata() async {
+    try {
+      final gRes = await _client.get('/metadata/groups');
+      final yRes = await _client.get('/metadata/years');
+      final sRes = await _client.get('/metadata/specialities');
+      setState(() {
+        _allGroups = gRes.data['data'] ?? [];
+        _allYears = yRes.data['data'] ?? [];
+        _allSpecialities = sRes.data['data'] ?? [];
+      });
+    } catch (_) {}
   }
 
   bool get _passwordMeetsLength => _newPasswordController.text.length >= 8;
@@ -66,6 +91,9 @@ class _SettingsPageState extends State<SettingsPage> {
         data: {
           'fullName': _nameController.text.trim(),
           'department': _departmentController.text.trim(),
+          'groups': _selectedGroups,
+          'years': _selectedYears,
+          'specialities': _selectedSpecialities,
         },
       );
 
@@ -206,6 +234,26 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           _buildField('Department', _departmentController),
           const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 12),
+          _buildMultiSelectField('Assigned Years', _allYears, _selectedYears, (val) {
+            setState(() {
+              _selectedYears.contains(val) ? _selectedYears.remove(val) : _selectedYears.add(val);
+            });
+          }),
+          const SizedBox(height: 16),
+          _buildMultiSelectField('Assigned Groups', _allGroups, _selectedGroups, (val) {
+            setState(() {
+              _selectedGroups.contains(val) ? _selectedGroups.remove(val) : _selectedGroups.add(val);
+            });
+          }),
+          const SizedBox(height: 16),
+          _buildMultiSelectField('Assigned Specialities', _allSpecialities, _selectedSpecialities, (val) {
+            setState(() {
+              _selectedSpecialities.contains(val) ? _selectedSpecialities.remove(val) : _selectedSpecialities.add(val);
+            });
+          }),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -343,6 +391,43 @@ class _SettingsPageState extends State<SettingsPage> {
             fillColor: enabled ? AppColors.surface : AppColors.background,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMultiSelectField(String label, List<dynamic> options, List<String> selected, Function(String) onToggle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((opt) {
+            final name = opt['name']?.toString() ?? '';
+            final isSelected = selected.contains(name);
+            return GestureDetector(
+              onTap: () => onToggle(name),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : AppColors.background,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                ),
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );

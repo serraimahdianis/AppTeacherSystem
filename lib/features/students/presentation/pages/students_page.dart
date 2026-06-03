@@ -14,18 +14,14 @@ class _StudentsPageState extends State<StudentsPage> {
   final _searchController = TextEditingController();
   String _selectedYear = '';
   String _selectedGroup = '';
-  bool _showOnlyMyStudents = false;
-
   List<Student> _allStudents = [];
   List<Student> _filteredStudents = [];
   List<String> _uniqueYears = [];
   List<String> _uniqueGroups = [];
-  Set<String> _teacherGroups = {};
   bool _isLoading = true;
   String _errorMessage = '';
 
   final _studentsService = StudentsService();
-  final _scheduleService = ScheduleService();
 
   @override
   void initState() {
@@ -39,7 +35,7 @@ class _StudentsPageState extends State<StudentsPage> {
       _errorMessage = '';
     });
 
-    await Future.wait([_loadStudents(), _loadTeacherGroups()]);
+    await _loadStudents();
   }
 
   Future<void> _loadStudents({String? group, String? year}) async {
@@ -74,34 +70,12 @@ class _StudentsPageState extends State<StudentsPage> {
     }
   }
 
-  Future<void> _loadTeacherGroups() async {
-    try {
-      final teacherId = ApiClient().teacherId;
-      if (teacherId == null) return;
-      final schedules = await _scheduleService.getTeacherSchedule(teacherId);
-      if (mounted) {
-        setState(() {
-          _teacherGroups = schedules
-              .map((s) => s.groupName.trim())
-              .where((g) => g.isNotEmpty)
-              .toSet();
-          _filter();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {});
-      }
-    }
-  }
+
 
   void _filter() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredStudents = _allStudents.where((student) {
-        if (_showOnlyMyStudents && _teacherGroups.isNotEmpty) {
-          if (!_teacherGroups.contains(student.group)) return false;
-        }
         final matchesSearch = query.isEmpty ||
             student.fullName.toLowerCase().contains(query) ||
             (student.studentId?.toLowerCase().contains(query) ?? false) ||
@@ -119,7 +93,6 @@ class _StudentsPageState extends State<StudentsPage> {
     setState(() {
       _selectedYear = '';
       _selectedGroup = '';
-      _showOnlyMyStudents = false;
     });
     _loadStudents();
   }
@@ -127,8 +100,7 @@ class _StudentsPageState extends State<StudentsPage> {
   bool get _hasActiveFilters =>
       _searchController.text.isNotEmpty ||
       _selectedYear.isNotEmpty ||
-      _selectedGroup.isNotEmpty ||
-      _showOnlyMyStudents;
+      _selectedGroup.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -243,68 +215,70 @@ class _StudentsPageState extends State<StudentsPage> {
             onChanged: (_) => _filter(),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildDropdown(
-                  value: _selectedYear,
-                  hint: 'All Years',
-                  items: _uniqueYears,
-                  onChanged: (v) {
-                    setState(() => _selectedYear = v);
-                    _filter();
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildDropdown(
-                  value: _selectedGroup,
-                  hint: 'All Groups',
-                  items: _uniqueGroups,
-                  onChanged: (v) {
-                    setState(() => _selectedGroup = v);
-                    _filter();
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  setState(() => _showOnlyMyStudents = !_showOnlyMyStudents);
-                  _filter();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _showOnlyMyStudents ? AppColors.primary.withValues(alpha: 0.1) : AppColors.background,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _showOnlyMyStudents ? AppColors.primary : AppColors.border,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 340;
+              if (isNarrow) {
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDropdown(
+                            value: _selectedYear,
+                            hint: 'All Years',
+                            items: _uniqueYears,
+                            onChanged: (v) {
+                              setState(() => _selectedYear = v);
+                              _filter();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildDropdown(
+                            value: _selectedGroup,
+                            hint: 'All Groups',
+                            items: _uniqueGroups,
+                            onChanged: (v) {
+                              setState(() => _selectedGroup = v);
+                              _filter();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdown(
+                      value: _selectedYear,
+                      hint: 'All Years',
+                      items: _uniqueYears,
+                      onChanged: (v) {
+                        setState(() => _selectedYear = v);
+                        _filter();
+                      },
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.group_work,
-                        size: 18,
-                        color: _showOnlyMyStudents ? AppColors.primary : AppColors.textMuted,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Mine',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _showOnlyMyStudents ? AppColors.primary : AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDropdown(
+                      value: _selectedGroup,
+                      hint: 'All Groups',
+                      items: _uniqueGroups,
+                      onChanged: (v) {
+                        setState(() => _selectedGroup = v);
+                        _filter();
+                      },
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           if (_uniqueGroups.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -316,10 +290,9 @@ class _StudentsPageState extends State<StudentsPage> {
                 itemBuilder: (context, index) {
                   final group = _uniqueGroups[index];
                   final isSelected = group == _selectedGroup;
-                  final isMyGroup = _teacherGroups.contains(group);
                   return GestureDetector(
                     onTap: () {
-                      setState(() => _selectedGroup = _selectedGroup == group ? '' : group);
+                      setState(() => _selectedGroup = isSelected ? '' : group);
                       _filter();
                     },
                     child: Container(
@@ -328,9 +301,7 @@ class _StudentsPageState extends State<StudentsPage> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.primary
-                            : isMyGroup
-                                ? AppColors.primary.withValues(alpha: 0.08)
-                                : AppColors.background,
+                            : AppColors.background,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected ? AppColors.primary : AppColors.border,
@@ -347,16 +318,6 @@ class _StudentsPageState extends State<StudentsPage> {
                               color: isSelected ? Colors.white : AppColors.textSecondary,
                             ),
                           ),
-                          if (isMyGroup && !isSelected)
-                            Container(
-                              margin: const EdgeInsets.only(left: 4),
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
                         ],
                       ),
                     ),
@@ -440,9 +401,7 @@ class _StudentsPageState extends State<StudentsPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              _showOnlyMyStudents
-                  ? 'You have no students assigned to your groups yet.'
-                  : 'Try adjusting your search or filters.',
+              'Try adjusting your search or filters.',
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -505,7 +464,10 @@ class _StudentsPageState extends State<StudentsPage> {
                         style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                       ),
                       const SizedBox(height: 6),
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (student.year != null && student.year!.isNotEmpty)
                             Container(
@@ -519,7 +481,6 @@ class _StudentsPageState extends State<StudentsPage> {
                                 style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          if (student.year != null && student.year!.isNotEmpty) const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
@@ -531,8 +492,7 @@ class _StudentsPageState extends State<StudentsPage> {
                               style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600),
                             ),
                           ),
-                          if (student.rfidCode != null && student.rfidCode!.isNotEmpty) ...[
-                            const SizedBox(width: 6),
+                          if (student.rfidCode != null && student.rfidCode!.isNotEmpty)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
@@ -551,7 +511,6 @@ class _StudentsPageState extends State<StudentsPage> {
                                 ],
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ],
@@ -631,7 +590,16 @@ class _StudentsPageState extends State<StudentsPage> {
           const SizedBox(width: 12),
           Text('$label:', style: const TextStyle(color: AppColors.textMuted, fontSize: 14)),
           const Spacer(),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 14)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 14),
+            ),
+          ),
         ],
       ),
     );

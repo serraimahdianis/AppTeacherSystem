@@ -6,7 +6,7 @@ import '../models/models.dart';
 class StudentsService {
   final ApiClient _client = ApiClient();
 
-  Future<List<Student>> getAllStudents({String? group, String? year}) async {
+  Future<List<Student>> getAllStudents({String? group, String? year, String? speciality}) async {
     try {
       final queryParams = <String, dynamic>{};
       if (group != null && group.isNotEmpty) {
@@ -14,6 +14,9 @@ class StudentsService {
       }
       if (year != null && year.isNotEmpty) {
         queryParams['year'] = year;
+      }
+      if (speciality != null && speciality.isNotEmpty) {
+        queryParams['speciality'] = speciality;
       }
       queryParams['limit'] = 500;
 

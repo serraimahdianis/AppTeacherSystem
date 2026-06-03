@@ -9,6 +9,7 @@ class Schedule {
   final String startTime; // Time string like "08:00"
   final String endTime; // Time string like "09:30"
   final String teacherId;
+  final String? speciality;
 
   Schedule({
     required this.id,
@@ -21,6 +22,7 @@ class Schedule {
     required this.startTime,
     required this.endTime,
     required this.teacherId,
+    this.speciality,
   });
 
   int get dayOfWeekInt {
@@ -115,6 +117,7 @@ class Schedule {
       startTime: (json['startTime'] ?? json['start_time'])?.toString() ?? '',
       endTime: (json['endTime'] ?? json['end_time'])?.toString() ?? '',
       teacherId: parseTeacherId(),
+      speciality: json['speciality']?.toString(),
     );
   }
 
@@ -130,6 +133,7 @@ class Schedule {
       'startTime': startTime,
       'endTime': endTime,
       'teacherId': teacherId,
+      'speciality': speciality,
     };
   }
 }

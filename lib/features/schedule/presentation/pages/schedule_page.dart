@@ -242,15 +242,29 @@ class _ScheduleCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(schedule.moduleName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
             const SizedBox(height: 4),
-            Row(children: [
-              const Icon(Icons.schedule, size: 13, color: AppColors.textMuted),
-              const SizedBox(width: 4),
-              Text('${schedule.startTime} - ${schedule.endTime}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-              const SizedBox(width: 12),
-              const Icon(Icons.room, size: 13, color: AppColors.textMuted),
-              const SizedBox(width: 4),
-              Text(schedule.room, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            ]),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.schedule, size: 13, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Text('${schedule.startTime} - ${schedule.endTime}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.room, size: 13, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Text(schedule.room, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  ],
+                ),
+              ],
+            ),
           ])),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.textMuted, size: 20),

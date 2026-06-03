@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../api/api_client.dart';
+import '../api/constants.dart';
 
 typedef AttendanceScanCallback = void Function({
   required String sessionId,
@@ -48,7 +49,8 @@ class SocketService {
     _connecting = true;
 
     final token = ApiClient().token ?? '';
-    final uri = Uri.parse('ws://localhost:3000?token=$token');
+    final wsUrl = ApiConstants.baseUrl.replaceFirst('http', 'ws');
+    final uri = Uri.parse('$wsUrl?token=$token');
 
     try {
       _channel = WebSocketChannel.connect(uri);

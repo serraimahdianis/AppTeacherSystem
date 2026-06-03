@@ -220,7 +220,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildStatsCards(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.3, children: [
+      child: GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.15, children: [
         _StatCard(title: 'Present Today', value: '$_presentToday', icon: Icons.check_circle, color: AppColors.success).animate().fade(delay: 100.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
         _StatCard(title: 'Absent Today', value: '$_absentToday', icon: Icons.cancel, color: AppColors.error).animate().fade(delay: 200.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
         _StatCard(title: 'Late Arrivals', value: '$_lateToday', icon: Icons.access_time_filled, color: AppColors.warning).animate().fade(delay: 300.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
