@@ -24,6 +24,8 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Session> _todaySessions = [];
   List<Session> _upcomingSessions = [];
   List<Attendance> _recentActivity = [];
+  List<double> _weeklySpots = List.filled(7, 0.0);
+  double _chartMaxY = 5.0;
 
   final _sessionsService = SessionsService();
   final _scheduleService = ScheduleService();
@@ -103,6 +105,10 @@ class _DashboardPageState extends State<DashboardPage> {
           } catch (_) {}
         }
 
+        final counts = _getWeeklySessionCounts(sessions);
+        double maxCount = counts.reduce((a, b) => a > b ? a : b);
+        if (maxCount < 5) maxCount = 5;
+
         setState(() {
           _todaySessions = todaySessions;
           _presentToday = stats['totalPresent'] ?? 0;
@@ -110,6 +116,8 @@ class _DashboardPageState extends State<DashboardPage> {
           _lateToday = stats['totalLate'] ?? 0;
           _upcomingSessions = todaySessions.where((s) => s.status == SessionStatus.planned).take(5).toList();
           _recentActivity = recentActivity.take(5).toList();
+          _weeklySpots = counts;
+          _chartMaxY = maxCount + 1;
           _isLoading = false;
         });
       }
@@ -265,7 +273,7 @@ class _DashboardPageState extends State<DashboardPage> {
       const SizedBox(height: 16),
       Container(
         padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.border)),
-        height: 220, child: _WeekChart(),
+        height: 220, child: _WeekChart(spots: _weeklySpots, maxY: _chartMaxY),
       ).animate().fade().slideY(begin: 0.1),
     ]));
   }
@@ -311,7 +319,27 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
+  List<double> _getWeeklySessionCounts(List<Session> sessions) {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    
+    final List<double> counts = [];
+    for (int i = 0; i < 7; i++) {
+      final dayDate = monday.add(Duration(days: i));
+      final count = sessions.where((s) {
+        final sDate = DateTime(s.date.year, s.date.month, s.date.day);
+        return sDate == dayDate && (s.status == SessionStatus.inProgress || s.status == SessionStatus.completed);
+      }).length;
+      counts.add(count.toDouble());
+    }
+    return counts;
+  }
+
 class _WeekChart extends StatelessWidget {
+  final List<double> spots;
+  final double maxY;
+  const _WeekChart({required this.spots, required this.maxY});
+
   @override
   Widget build(BuildContext context) {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -322,10 +350,14 @@ class _WeekChart extends StatelessWidget {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            getTitlesWidget: (v, m) => Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(days[v.toInt() % 7], style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
-            ),
+            getTitlesWidget: (v, m) {
+              final idx = v.toInt();
+              if (idx < 0 || idx >= 7) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(days[idx], style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
+              );
+            },
           ),
         ),
         leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -333,9 +365,16 @@ class _WeekChart extends StatelessWidget {
         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
       ),
       borderData: FlBorderData(show: false),
-      minX: 0, maxX: 6, minY: 0, maxY: 100,
+      minX: 0, maxX: 6, minY: 0, maxY: maxY,
       lineBarsData: [
-        LineChartBarData(spots: List.generate(7, (i) => FlSpot(i.toDouble(), 50.0 + (i * 5.0).toDouble())), isCurved: true, color: AppColors.primaryLight, barWidth: 3, dotData: FlDotData(show: true, getDotPainter: (s, p, a, i) => FlDotCirclePainter(radius: 4, color: AppColors.primaryLight, strokeWidth: 0)), belowBarData: BarAreaData(show: true, color: AppColors.primaryLight.withValues(alpha: 0.1))),
+        LineChartBarData(
+          spots: List.generate(7, (i) => FlSpot(i.toDouble(), spots[i])),
+          isCurved: true,
+          color: AppColors.primaryLight,
+          barWidth: 3,
+          dotData: FlDotData(show: true, getDotPainter: (s, p, a, i) => FlDotCirclePainter(radius: 4, color: AppColors.primaryLight, strokeWidth: 0)),
+          belowBarData: BarAreaData(show: true, color: AppColors.primaryLight.withValues(alpha: 0.1)),
+        ),
       ],
     ));
   }

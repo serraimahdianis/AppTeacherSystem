@@ -14,16 +14,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final _nameController = TextEditingController();
   final _departmentController = TextEditingController();
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-
   bool _isSavingProfile = false;
-  bool _isSavingPassword = false;
   bool _profileSaved = false;
-  bool _passwordSaved = false;
   String? _profileError;
-  String? _passwordError;
 
   List<String> _selectedGroups = [];
   List<String> _selectedYears = [];
@@ -62,18 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (_) {}
   }
 
-  bool get _passwordMeetsLength => _newPasswordController.text.length >= 8;
-  bool get _passwordHasUppercase => _newPasswordController.text.contains(RegExp(r'[A-Z]'));
-  bool get _passwordHasNumber => _newPasswordController.text.contains(RegExp(r'[0-9]'));
-  bool get _passwordsMatch => _newPasswordController.text == _confirmPasswordController.text;
-  bool get _passwordFormValid =>
-      _currentPasswordController.text.isNotEmpty &&
-      _newPasswordController.text.isNotEmpty &&
-      _confirmPasswordController.text.isNotEmpty &&
-      _passwordsMatch &&
-      _passwordMeetsLength &&
-      _passwordHasUppercase &&
-      _passwordHasNumber;
+
 
   Future<void> _saveProfile() async {
     setState(() {
@@ -114,38 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> _changePassword() async {
-    setState(() {
-      _isSavingPassword = true;
-      _passwordError = null;
-      _passwordSaved = false;
-    });
 
-    try {
-      await _authService.changePassword(
-        currentPassword: _currentPasswordController.text,
-        newPassword: _newPasswordController.text,
-      );
-
-      setState(() {
-        _passwordSaved = true;
-        _isSavingPassword = false;
-      });
-      _currentPasswordController.clear();
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
-    } on DioException catch (e) {
-      setState(() {
-        _passwordError = e.response?.data?['message']?.toString() ?? 'Failed to change password.';
-        _isSavingPassword = false;
-      });
-    } catch (e) {
-      setState(() {
-        _passwordError = e.toString();
-        _isSavingPassword = false;
-      });
-    }
-  }
 
   Future<void> _handleLogout() async {
     await _authService.logout();
@@ -166,10 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSectionTitle('Profile Information'),
           const SizedBox(height: 12),
           _buildProfileCard(),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Security'),
-          const SizedBox(height: 12),
-          _buildPasswordCard(),
+
           const SizedBox(height: 32),
           _buildLogoutButton(),
         ],
@@ -268,112 +216,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildPasswordCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_passwordError != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.errorLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(_passwordError!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
-            ),
-          if (_passwordSaved)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.successLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.check_circle, size: 16, color: AppColors.success),
-                  SizedBox(width: 8),
-                  Text('Password updated successfully!', style: TextStyle(color: AppColors.success, fontSize: 13)),
-                ],
-              ),
-            ),
-          _buildField('Current Password', _currentPasswordController, isPassword: true),
-          const SizedBox(height: 16),
-          _buildField('New Password', _newPasswordController, isPassword: true),
-          const SizedBox(height: 16),
-          _buildField('Confirm Password', _confirmPasswordController, isPassword: true),
-          const SizedBox(height: 16),
-          _buildPasswordRequirements(),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: (_isSavingPassword || !_passwordFormValid) ? null : _changePassword,
-              child: _isSavingPassword
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Update Password'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildPasswordRequirements() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Requirements:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          const SizedBox(height: 8),
-          _requirementRow('At least 8 characters', _passwordMeetsLength),
-          _requirementRow('Contains uppercase letter', _passwordHasUppercase),
-          _requirementRow('Contains a number', _passwordHasNumber),
-          if (_newPasswordController.text.isNotEmpty || _confirmPasswordController.text.isNotEmpty)
-            _requirementRow('Passwords match', _passwordsMatch),
-        ],
-      ),
-    );
-  }
-
-  Widget _requirementRow(String text, bool met) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Icon(
-            met ? Icons.check_circle : Icons.circle_outlined,
-            size: 16,
-            color: met ? AppColors.success : AppColors.textMuted,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              color: met ? AppColors.textPrimary : AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildField(String label, TextEditingController controller, {bool enabled = true, bool isPassword = false}) {
     return Column(
