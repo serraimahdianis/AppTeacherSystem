@@ -194,15 +194,20 @@ class _DashboardPageState extends State<DashboardPage> {
       padding: const EdgeInsets.all(24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Row(children: [
-            Container(width: 52, height: 52, decoration: BoxDecoration(gradient: AppColors.primaryGradient, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))]),
-              child: const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
-            const SizedBox(width: 16),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Smart', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-              Text('Attendance', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryLight)),
+          Expanded(
+            child: Row(children: [
+              Container(width: 52, height: 52, decoration: BoxDecoration(gradient: AppColors.primaryGradient, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))]),
+                child: const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Smart', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                  Text('Attendance', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryLight), overflow: TextOverflow.ellipsis),
+                ]),
+              ),
             ]),
-          ]),
+          ),
+          const SizedBox(width: 16),
           Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.surfaceGlass, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.border.withValues(alpha: 0.5))),
             child: Row(children: [
               const Icon(Icons.calendar_today, size: 14, color: AppColors.primaryLight), const SizedBox(width: 8),
@@ -220,7 +225,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildStatsCards(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.15, children: [
+      child: GridView.count(crossAxisCount: MediaQuery.sizeOf(context).width > 600 ? 4 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.15, children: [
         _StatCard(title: 'Present Today', value: '$_presentToday', icon: Icons.check_circle, color: AppColors.success).animate().fade(delay: 100.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
         _StatCard(title: 'Absent Today', value: '$_absentToday', icon: Icons.cancel, color: AppColors.error).animate().fade(delay: 200.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
         _StatCard(title: 'Late Arrivals', value: '$_lateToday', icon: Icons.access_time_filled, color: AppColors.warning).animate().fade(delay: 300.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),

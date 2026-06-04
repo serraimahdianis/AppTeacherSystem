@@ -304,13 +304,10 @@ class _AttendancePageState extends State<AttendancePage> {
     final marked = _presentCount + _lateCount + _absentCount;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Row(children: [
+      child: Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
         _StatPill(label: 'Present', count: _presentCount, color: AppColors.success),
-        const SizedBox(width: 8),
         _StatPill(label: 'Late', count: _lateCount, color: AppColors.warning),
-        const SizedBox(width: 8),
         _StatPill(label: 'Absent', count: _absentCount, color: AppColors.error),
-        const Spacer(),
         Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
           child: Text('$marked/$total', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
@@ -369,20 +366,19 @@ class _AttendancePageState extends State<AttendancePage> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: AppColors.surface, border: Border(top: BorderSide(color: AppColors.border.withValues(alpha: 0.5)))),
       child: SafeArea(child: Row(children: [
-        Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Progress', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          const SizedBox(height: 4),
-          Row(children: [
-            Text('${_presentCount + _lateCount}/${_students.length}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(width: 8),
-            _MiniStat(label: 'P', count: _presentCount, color: AppColors.success),
-            const SizedBox(width: 4),
-            _MiniStat(label: 'L', count: _lateCount, color: AppColors.warning),
-            const SizedBox(width: 4),
-            _MiniStat(label: 'A', count: _absentCount, color: AppColors.error),
+        Expanded(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Progress', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            const SizedBox(height: 4),
+            Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 6, runSpacing: 4, children: [
+              Text('${_presentCount + _lateCount}/${_students.length}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              _MiniStat(label: 'P', count: _presentCount, color: AppColors.success),
+              _MiniStat(label: 'L', count: _lateCount, color: AppColors.warning),
+              _MiniStat(label: 'A', count: _absentCount, color: AppColors.error),
+            ]),
           ]),
-        ]),
-        const Spacer(),
+        ),
+        const SizedBox(width: 16),
         ElevatedButton(onPressed: () => context.pop(), child: const Text('Done')),
       ])),
     );

@@ -281,9 +281,9 @@ class _ReportsPageState extends State<ReportsPage> {
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color))),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+            FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
           ],
         ),
       ),
@@ -419,9 +419,9 @@ class _ReportsPageState extends State<ReportsPage> {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+            FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted))),
           ],
         ),
       ),

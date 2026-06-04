@@ -377,13 +377,13 @@ class _SessionCardItem extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
+              Wrap(spacing: 6, runSpacing: 4, children: [
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
                   child: Text(typeLabel, style: TextStyle(color: typeColor, fontSize: 11, fontWeight: FontWeight.bold))),
-                if (isSchedule) ...[const SizedBox(width: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('Schedule', style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w600)))],
-                if (isReplacement) ...[const SizedBox(width: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('Extra', style: TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.w600)))],
+                if (isSchedule) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                  child: const Text('Schedule', style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w600))),
+                if (isReplacement) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                  child: const Text('Extra', style: TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.w600))),
               ]),
               const SizedBox(height: 6),
               Text(moduleName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
@@ -394,11 +394,17 @@ class _SessionCardItem extends StatelessWidget {
                 Text('${months[date.month - 1]} ${date.day}, ${date.year} (${days[date.weekday % 7]})', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               ]),
               const SizedBox(height: 2),
-              Row(children: [
-                const Icon(Icons.schedule, size: 13, color: AppColors.textMuted),
-                const SizedBox(width: 4),
-                Text('$startTime - $endTime', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-                if (room.isNotEmpty) ...[const SizedBox(width: 12), const Icon(Icons.room, size: 13, color: AppColors.textMuted), const SizedBox(width: 4), Text(room, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))],
+              Wrap(spacing: 12, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.schedule, size: 13, color: AppColors.textMuted),
+                  const SizedBox(width: 4),
+                  Text('$startTime - $endTime', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                ]),
+                if (room.isNotEmpty) Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.room, size: 13, color: AppColors.textMuted),
+                  const SizedBox(width: 4),
+                  Flexible(child: Text(room, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis)),
+                ]),
               ]),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -410,7 +416,7 @@ class _SessionCardItem extends StatelessWidget {
               ],
             ]),
           ]),
-          if (groupName.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(groupName, style: const TextStyle(fontSize: 12, color: AppColors.textMuted))),
+          if (groupName.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(groupName, style: const TextStyle(fontSize: 12, color: AppColors.textMuted), overflow: TextOverflow.ellipsis)),
           const SizedBox(height: 12),
           Row(children: [
             if (isSchedule || status == SessionStatus.planned)

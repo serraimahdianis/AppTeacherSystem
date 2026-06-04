@@ -232,12 +232,11 @@ class _ScheduleCard extends StatelessWidget {
           Container(width: 4, height: 72, decoration: BoxDecoration(color: typeColor, borderRadius: BorderRadius.circular(2))),
           const SizedBox(width: 16),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
+            Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
               Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
                 child: Text(schedule.type.toUpperCase(), style: TextStyle(color: typeColor, fontSize: 11, fontWeight: FontWeight.bold))),
-              const SizedBox(width: 8),
               Text(schedule.year, style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w500)),
-              if (schedule.groupName.isNotEmpty) ...[const SizedBox(width: 8), Text('• ${schedule.groupName}', style: const TextStyle(fontSize: 12, color: AppColors.textMuted))],
+              if (schedule.groupName.isNotEmpty) Text('• ${schedule.groupName}', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
             ]),
             const SizedBox(height: 6),
             Text(schedule.moduleName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
