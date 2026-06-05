@@ -454,14 +454,17 @@ class _ExtraSessionSheetState extends State<_ExtraSessionSheet> {
 
   String? _moduleId;
   String _type = 'cours';
+  String _year = 'L1';
+  String? _group;
+  String? _speciality;
   DateTime _date = DateTime.now();
   final _startTimeController = TextEditingController(text: '08:00');
   final _endTimeController = TextEditingController(text: '09:30');
-  String? _group;
   final _reasonController = TextEditingController();
 
   final _sessionsService = SessionsService();
   final _types = ['cours', 'td', 'tp'];
+  final _years = ['L1', 'L2', 'L3', 'M1', 'M2'];
 
   @override
   void dispose() {
@@ -489,7 +492,9 @@ class _ExtraSessionSheetState extends State<_ExtraSessionSheet> {
         'date': _date.toIso8601String().split('T')[0],
         'startTime': _startTimeController.text,
         'endTime': _endTimeController.text,
+        'year': _year,
         'group': _group,
+        'speciality': _speciality?.isNotEmpty == true ? _speciality : null,
         'isReplacement': true,
         'reasonForReplacement': _reasonController.text.isNotEmpty ? _reasonController.text : 'Extra session',
         'status': 'planned',
@@ -529,19 +534,27 @@ class _ExtraSessionSheetState extends State<_ExtraSessionSheet> {
             Row(children: [
               Expanded(child: _buildDropdown('Type', _types.map((t) => (t.toUpperCase(), t)).toList(), _type, (v) => setState(() => _type = v!))),
               const SizedBox(width: 12),
-              Expanded(child: GestureDetector(
-                onTap: _pickDate,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
-                  child: Row(children: [
-                    const Icon(Icons.calendar_today, size: 16, color: AppColors.textMuted),
-                    const SizedBox(width: 8),
-                    Text('${months[_date.month - 1]} ${_date.day}, ${_date.year}', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
-                  ]),
-                ),
-              )),
+              Expanded(child: _buildDropdown('Year', _years.map((y) => (y, y)).toList(), _year, (v) => setState(() => _year = v!))),
             ]),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'Group (optional)'), onChanged: (v) => _group = v)),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'Speciality (optional)'), onChanged: (v) => _speciality = v)),
+            ]),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _pickDate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+                child: Row(children: [
+                  const Icon(Icons.calendar_today, size: 16, color: AppColors.textMuted),
+                  const SizedBox(width: 8),
+                  Text('${months[_date.month - 1]} ${_date.day}, ${_date.year}', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
+                ]),
+              ),
+            ),
             const SizedBox(height: 16),
             Row(children: [
               Expanded(child: TextFormField(controller: _startTimeController, decoration: const InputDecoration(labelText: 'Start'), validator: (v) => v == null || v.isEmpty ? 'Required' : null)),

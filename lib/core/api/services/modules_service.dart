@@ -19,7 +19,7 @@ class ModulesService {
   Future<List<Module>> getModulesByTeacher(String teacherId) async {
     try {
       final response = await _client.get(
-        ApiConstants.modulesTeacher.replaceFirst(':id', teacherId),
+        ApiConstants.modules,
         queryParameters: {'limit': 100},
       );
       final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? response.data['modules'] ?? []);

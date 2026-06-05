@@ -299,6 +299,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
   String _type = 'cours';
   String _year = 'L1';
   String? _group;
+  String? _speciality;
   String _dayOfWeek = 'Monday';
   final _startTimeController = TextEditingController(text: '08:00');
   final _endTimeController = TextEditingController(text: '09:30');
@@ -332,6 +333,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
         'type': _type,
         'year': _year,
         'group': _showGroup ? _group : null,
+        'speciality': _speciality?.isNotEmpty == true ? _speciality : null,
         'dayOfWeek': _dayOfWeek,
         'startTime': _startTimeController.text,
         'endTime': _endTimeController.text,
@@ -394,11 +396,18 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
               Expanded(child: _buildDropdown('Year', _years.map((y) => (y, y)).toList(), _year, (v) => setState(() => _year = v!))),
             ]),
             const SizedBox(height: 16),
-            if (_showGroup) TextFormField(
-              decoration: const InputDecoration(labelText: 'Group', hintText: 'e.g. Group 2A'),
-              onChanged: (v) => _group = v,
-            ),
-            if (_showGroup) const SizedBox(height: 16),
+            Row(children: [
+              if (_showGroup) Expanded(child: TextFormField(
+                decoration: const InputDecoration(labelText: 'Group', hintText: 'e.g. Group 2A'),
+                onChanged: (v) => _group = v,
+              )),
+              if (_showGroup) const SizedBox(width: 12),
+              Expanded(child: TextFormField(
+                decoration: const InputDecoration(labelText: 'Speciality (optional)', hintText: 'Leave blank for all'),
+                onChanged: (v) => _speciality = v,
+              )),
+            ]),
+            const SizedBox(height: 16),
             _buildDropdown('Day', _days.map((d) => (d, d)).toList(), _dayOfWeek, (v) => setState(() => _dayOfWeek = v!)),
             const SizedBox(height: 16),
             Row(children: [
