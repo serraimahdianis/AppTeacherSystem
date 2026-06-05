@@ -26,6 +26,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
   TimeOfDay _endTime = const TimeOfDay(hour: 9, minute: 30);
   String _type = 'cours';
   String _group = '';
+  String _room = '';
   String _status = 'planned';
   bool _isReplacement = false;
   String _reason = '';
@@ -34,6 +35,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
   bool _isSaving = false;
 
   final _groupController = TextEditingController();
+  final _roomController = TextEditingController();
   final _reasonController = TextEditingController();
 
   final _types = ['cours', 'td', 'tp'];
@@ -48,6 +50,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
   @override
   void dispose() {
     _groupController.dispose();
+    _roomController.dispose();
     _reasonController.dispose();
     super.dispose();
   }
@@ -134,6 +137,7 @@ class _NewSessionPageState extends State<NewSessionPage> {
         'endTime': _formatTime(_endTime),
         'type': _type,
         'group': _group.isEmpty ? null : _group,
+        'room': _room.isEmpty ? null : _room,
         'scheduleId': _selectedSchedule?.id,
         'status': _status,
         'isReplacement': _isReplacement,
@@ -258,6 +262,15 @@ class _NewSessionPageState extends State<NewSessionPage> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (v) => _group = v,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _roomController,
+                    decoration: const InputDecoration(
+                      labelText: 'Room (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) => _room = v,
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown<String>(
